@@ -503,6 +503,16 @@ public class GameView extends View {
         }
         return result;
     }
+    /**
+     * Checks the current game state for a winner.
+     * <p>
+     * This method iterates through all the chips to count how many of them are in their home position.
+     * If all chips of a particular team are in their home position, a dialog is shown declaring that team as the winner.
+     * </p>
+     * <p>
+     * Note: It seems there might be an error in the code. Both dialog messages state that "Team Dark" won. You might want to adjust this.
+     * </p>
+     */
     private void checkForWinner(){
         int da = 0;
         int li = 0;
@@ -536,6 +546,12 @@ public class GameView extends View {
         }
     }
 
+    /**
+     * Resets the game state to its initial configuration.
+     * <p>
+     * This method clears all game-related collections, sets the current player to DARK, and initializes the game board with chips in their starting positions.
+     * </p>
+     */
     private void reset(){
         chipz.clear();
         legalMoves.clear();
