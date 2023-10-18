@@ -1,12 +1,13 @@
 package edu.byuh.cis.cs203.outwit203_undostack;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Message;
@@ -34,9 +35,11 @@ public class GameView extends View {
     private RectF undoButton;
     private Bitmap undoIcon;
     private Stack<Move> undoStack;
+    private int  currentPlayer = Team.DARK;
+    private Paint paint;
+    private boolean moving;
 
     private class Timer extends Handler {
-
         private boolean paused;
 
         /**
@@ -76,9 +79,11 @@ public class GameView extends View {
             if (!paused) {
                 sendMessageDelayed(obtainMessage(), 10);
             }
+            if (!anyMovingChips()) {
+                checkForWinner();
+            }
         }
     }
-
 
     /**
      * Our constructor. This is where we initialize our fields.
@@ -108,6 +113,10 @@ public class GameView extends View {
         selected = null;
         undoIcon = BitmapFactory.decodeResource(getResources(), R.drawable.undo);
         undoStack = new Stack<>();
+        paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(100);
+        paint.setStyle(Paint.Style.FILL);
     }
 
     /**
@@ -120,6 +129,7 @@ public class GameView extends View {
      */
     @Override
     public void onDraw(Canvas c) {
+
         final var w = c.getWidth();
         final var h = c.getHeight();
         final float cellSize = w/9f;
@@ -199,6 +209,12 @@ public class GameView extends View {
         //draw the undo button
         c.drawRoundRect(undoButton, undoButton.width()*0.1f, undoButton.width()*0.1f, blackLine);
         c.drawBitmap(undoIcon, null, undoButton, null);
+
+        if (currentPlayer == 1){
+            c.drawText("Dark Team Turn",cellSize*2f, cellSize*11f, paint);
+        } else {
+            c.drawText("Light Team Turn",cellSize*2f, cellSize*11f, paint);
+        }
     }
 
     /**
@@ -229,6 +245,11 @@ public class GameView extends View {
                     final var moov = new Move(selected.getHostCell(), cell);
                     undoStack.push(moov);
                     selected.setDestination(cell);
+                    if (currentPlayer==Team.DARK){
+                        currentPlayer = Team.LIGHT;
+                    } else if (currentPlayer == Team.LIGHT){
+                        currentPlayer = Team.DARK;
+                    }
                     selected = null;
                     break;
                 }
@@ -242,7 +263,7 @@ public class GameView extends View {
 
             //now, check which chip got tapped
             for (var chippy : chipz) {
-                if (chippy.contains(x, y)) {
+                if (chippy.contains(x, y)&&chippy.getColor()==currentPlayer) {
                     //if user taps the selected chip, unselect it
                     if (selected == chippy) {
                         selected.unselect();
@@ -289,6 +310,11 @@ public class GameView extends View {
             selected.setDestination(moveTo);
             selected.unselect();
             selected = null;
+            if (currentPlayer==Team.DARK){
+                currentPlayer = Team.LIGHT;
+            } else {
+                currentPlayer = Team.DARK;
+            }
         }
     }
 
@@ -476,5 +502,67 @@ public class GameView extends View {
             }
         }
         return result;
+    }
+    private void checkForWinner(){
+        int da = 0;
+        int li = 0;
+        for (var i: chipz){
+            if(i.isHome() && i.getColor() == Team.DARK){
+                da+=1;
+            } else if (i.isHome() && i.getColor() == Team.LIGHT){
+                li+=1;
+            }
+        }
+
+        if (da==9){
+            AlertDialog.Builder ab = new AlertDialog.Builder(getContext())
+                    .setTitle("Game Result")
+                    .setMessage("Congratulation! Team Dark won this game.Thank you for playing Outwit!")
+                    .setPositiveButton("Play Again!", (gori, i)-> reset())
+                    .setNegativeButton("Quit", (go, i)->((Activity)getContext()).finish())
+                    .setCancelable(false);
+            ab.show();
+            tim.pause();
+        }
+        if (li==9){
+            AlertDialog.Builder cd = new AlertDialog.Builder(getContext())
+                    .setTitle("Game Result")
+                    .setMessage("Congratulation! Team Dark won this game.Thank you for playing Outwit!")
+                    .setPositiveButton("Play Again!", (di, i)-> reset())
+                    .setNegativeButton("Quit", (d, i)->((Activity)getContext()).finish())
+                    .setCancelable(false);
+            cd.show();
+            tim.pause();
+        }
+    }
+
+    private void reset(){
+        chipz.clear();
+        legalMoves.clear();
+        undoStack.clear();
+        currentPlayer =Team.DARK;
+        moving = false;
+        tim.resume();
+
+        for (var i=0; i<10; i++) {
+            for (var j=0; j<9; j++) {
+                cellz[j][i].liberate();
+            }
+        }
+        for (var i=0; i<9; i++) {
+            Chip dark = null;
+            Chip light = null;
+            if (i==4) {
+                dark = Chip.power(Team.DARK);
+                light = Chip.power(Team.LIGHT);
+            } else {
+                dark = Chip.normal(Team.DARK);
+                light = Chip.normal(Team.LIGHT);
+            }
+            dark.setCell(cellz[i][i]);
+            light.setCell(cellz[i][i+1]);
+            chipz.add(dark);
+            chipz.add(light);
+        }
     }
 }
