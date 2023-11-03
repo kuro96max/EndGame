@@ -3,6 +3,7 @@ package edu.byuh.cis.cs203.outwit203_undostack;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,5 +22,39 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(b);
         gv = new GameView(this);
         setContentView(gv);
+    }
+    /**
+     * Called when the activity is paused.
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+//        gv.pauseGame();
+        Log.d("CS203", "Pause!");
+    }
+    /**
+     * Called when the activity is resumed.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+//        gv.resumeGame();
+        Log.d("CS203", "Start again!");
+    }
+    /**
+     * Perform any final cleanup before the activity is destroyed.
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d("CS203", "Good bye!");
+    }
+    /**
+     * Called when the back button is pressed.
+     */
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Log.d("CS203", "Back to previous");
     }
 }

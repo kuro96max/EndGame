@@ -74,14 +74,17 @@ public class GameView extends View {
         public void handleMessage(Message m) {
             for (var c : chipz) {
                 c.animate();
+                if(c.animate()){
+                    checkForWinner();
+                }
             }
             invalidate();
             if (!paused) {
                 sendMessageDelayed(obtainMessage(), 10);
             }
-            if (!anyMovingChips()) {
-                checkForWinner();
-            }
+//            if (!anyMovingChips()) {
+//                checkForWinner();
+//            }
         }
     }
 
@@ -115,7 +118,7 @@ public class GameView extends View {
         undoStack = new Stack<>();
         paint = new Paint();
         paint.setColor(Color.BLACK);
-        paint.setTextSize(100);
+        paint.setTextSize(50);
         paint.setStyle(Paint.Style.FILL);
     }
 
@@ -211,9 +214,9 @@ public class GameView extends View {
         c.drawBitmap(undoIcon, null, undoButton, null);
 
         if (currentPlayer == 1){
-            c.drawText("Dark Team Turn",cellSize*2f, cellSize*11f, paint);
+            c.drawText("Dark Team Turn",cellSize, cellSize*11f, paint);
         } else {
-            c.drawText("Light Team Turn",cellSize*2f, cellSize*11f, paint);
+            c.drawText("Light Team Turn",cellSize, cellSize*11f, paint);
         }
     }
 
@@ -579,6 +582,17 @@ public class GameView extends View {
             light.setCell(cellz[i][i+1]);
             chipz.add(dark);
             chipz.add(light);
+        }
+    }
+    public void pauseGame() {
+        if (tim != null) {
+            tim.pause();
+        }
+    }
+
+    public void resumeGame() {
+        if (tim != null) {
+            tim.resume();
         }
     }
 }

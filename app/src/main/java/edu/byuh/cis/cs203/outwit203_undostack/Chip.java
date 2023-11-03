@@ -198,15 +198,18 @@ public class Chip {
      * Move the token by its current velocity.
      * Stop when it reaches its destination location.
      */
-    public void animate() {
+    public boolean animate() {
+        boolean check = false;
         if (isMoving()) {
             float dx = destination.bounds().left - currentLocation.left;
             float dy = destination.bounds().top - currentLocation.top;
             if (PointF.length(dx, dy) < currentLocation.width() / 2) {
                 setCell(destination);
+                check = true;
             }
             currentLocation.offset(velocity.x, velocity.y);
         }
+        return check;
     }
 
 
